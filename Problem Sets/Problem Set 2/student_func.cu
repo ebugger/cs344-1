@@ -108,6 +108,29 @@ void gaussian_blur(const unsigned char* const inputChannel,
                    int numRows, int numCols,
                    const float* const filter, const int filterWidth)
 {
+const int2 thread_2D_pos = make_int2( blockIdx.x * blockDim.x + threadIdx.x,
+    blockIdx.y * blockDim.y + threadIdx.y);
+const int thread_1D_pos = thread_2D_pos.y * numCols + thread_2D_pos.x;
+const int absolute_image_position_x = thread_2D_pos.x;
+const int absolute_image_position_y = thread_2D_pos.y;
+if ( absolute_image_position_x >= numCols ||
+absolute_image_position_y >= numRows )
+{
+return;
+}
+float color = 0.0f;
+for(int py=0; py < filterWidth; py++){
+for(int px=0; px < filterWidth; px++){
+int c_x = absolute_image_position_x + px - filterWidth / 2;
+int c_y = absolute_image_position_y + py - filterWidth / 2;
+c_x = min(max(c_x, 0), numCols - 1);
+c_y = min(max(c_y, 0), numRows - 1);
+float filter_value = filter[py*filterWidth + px];
+color += filter_value*static_cast<float>(inputChannel[c_y*numCols + c_x]);
+}
+}
+outputChannel[thread_1D_pos] = color;
+/*
   // Complete
   const int2 absolute_image_position = make_int2( blockIdx.x * blockDim.x + threadIdx.x, 
                                                   blockIdx.y * blockDim.y + threadIdx.y);
@@ -131,27 +154,6 @@ void gaussian_blur(const unsigned char* const inputChannel,
   float result = 0.f;
   for (int filter_r =  -filterWidth/2; filter_r <= filterWidth/2; ++filter_r) {
     for (int filter_c =  -filterWidth/2; filter_c <= filterWidth/2; ++filter_c) {
-      /*
-      int image_r = 0, image_c = 0;
-      if(absolute_image_position.y + filter_r < 0) {
-        image_r = 0;
-      } else {
-        if (absolute_image_position.y > (numRows - 1)) {
-          image_r = numRows - 1;
-        }else {
-          image_r = absolute_image_position.y + filter_r;
-        }
-      }
-      if(absolute_image_position.x + filter_c < 0) {
-        image_c = 0;
-      } else {
-        if (absolute_image_position.x > (numCols - 1)) {
-          image_c = numCols - 1;
-        }else {
-          image_c = absolute_image_position.x + filter_c;
-        }
-      }
-      */
       int image_r = min(max(absolute_image_position.y + filter_r, 0), static_cast<int>(numRows - 1));
       int image_c = min(max(absolute_image_position.x + filter_c, 0), static_cast<int>(numCols - 1));
       float image_value = static_cast<float>(inputChannel[image_r * numCols + image_c]);
@@ -161,6 +163,7 @@ void gaussian_blur(const unsigned char* const inputChannel,
   }
   //__syncthreads();
   outputChannel[thread_1D_pos] = result;
+  */
   // NOTE: If a thread's absolute position 2D position is within the image, but some of
   // its neighbors are outside the image, then you will need to be extra careful. Instead
   // of trying to read such a neighbor value from GPU memory (which won't work because
