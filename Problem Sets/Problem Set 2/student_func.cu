@@ -108,29 +108,6 @@ void gaussian_blur(const unsigned char* const inputChannel,
                    int numRows, int numCols,
                    const float* const filter, const int filterWidth)
 {
-const int2 thread_2D_pos = make_int2( blockIdx.x * blockDim.x + threadIdx.x,
-    blockIdx.y * blockDim.y + threadIdx.y);
-const int thread_1D_pos = thread_2D_pos.y * numCols + thread_2D_pos.x;
-const int absolute_image_position_x = thread_2D_pos.x;
-const int absolute_image_position_y = thread_2D_pos.y;
-if ( absolute_image_position_x >= numCols ||
-absolute_image_position_y >= numRows )
-{
-return;
-}
-float color = 0.0f;
-for(int py=0; py < filterWidth; py++){
-for(int px=0; px < filterWidth; px++){
-int c_x = absolute_image_position_x + px - filterWidth / 2;
-int c_y = absolute_image_position_y + py - filterWidth / 2;
-c_x = min(max(c_x, 0), numCols - 1);
-c_y = min(max(c_y, 0), numRows - 1);
-float filter_value = filter[py*filterWidth + px];
-color += filter_value*static_cast<float>(inputChannel[c_y*numCols + c_x]);
-}
-}
-outputChannel[thread_1D_pos] = color;
-/*
   // Complete
   const int2 absolute_image_position = make_int2( blockIdx.x * blockDim.x + threadIdx.x, 
                                                   blockIdx.y * blockDim.y + threadIdx.y);
@@ -148,10 +125,11 @@ outputChannel[thread_1D_pos] = color;
   // {
   //     return;
   // }
-  if (absolute_image_position.x > numCols || absolute_image_position.y > numRows) {
+  if (absolute_image_position.x >= numCols || absolute_image_position.y >= numRows) {
     return;
   }
   float result = 0.f;
+  /*
   for (int filter_r =  -filterWidth/2; filter_r <= filterWidth/2; ++filter_r) {
     for (int filter_c =  -filterWidth/2; filter_c <= filterWidth/2; ++filter_c) {
       int image_r = min(max(absolute_image_position.y + filter_r, 0), static_cast<int>(numRows - 1));
@@ -161,9 +139,20 @@ outputChannel[thread_1D_pos] = color;
       result += image_value * filter_value;
     }
   }
+  */
+  for (int k_y=0;k_y<filterWidth;k_y++) {
+    for (int k_x=0;k_x<filterWidthl;k_x++) {
+      int curr_abs_x = absolute_image_position.x + k_x - filterWidth/2;
+      int curr_abs_y = absolute_image_position.y + k_y - filterWidth/2;
+      curr_abs_x = min(max(curr_abs_x, 0), numCols - 1);
+      curr_abs_y = min(max(curr_abs_y, 0), numRows - 1);
+      float curr_image_value = static_cast<float>(inputChannel[curr_abs_y * numCols + curr_abs_x]);
+      float curr_filter_value = filter[k_y * filterWidth + k_x];
+      result += curr_image_value * curr_filter_value;
+    }
+  }
   //__syncthreads();
   outputChannel[thread_1D_pos] = result;
-  */
   // NOTE: If a thread's absolute position 2D position is within the image, but some of
   // its neighbors are outside the image, then you will need to be extra careful. Instead
   // of trying to read such a neighbor value from GPU memory (which won't work because
