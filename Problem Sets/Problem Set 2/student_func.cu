@@ -238,7 +238,7 @@ void allocateMemoryAndCopyToGPU(const size_t numRowsImage, const size_t numColsI
   //IMPORTANT: Notice that we pass a pointer to a pointer to cudaMalloc
 
   //TODO:
-  checkCudaErrors(cudaMemcpy((void *)d_filter, (void *)h_filter, sizeof(float) * filterWidth, cudaMemcpyHostToDevice))
+  checkCudaErrors(cudaMemcpy((void *)d_filter, (void *)h_filter, sizeof(float) * filterWidth, cudaMemcpyHostToDevice));
   //Copy the filter on the host (h_filter) to the memory you just allocated
   //on the GPU.  cudaMemcpy(dst, src, numBytes, cudaMemcpyHostToDevice);
   //Remember to use checkCudaErrors!
