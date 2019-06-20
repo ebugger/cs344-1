@@ -137,7 +137,7 @@ void gaussian_blur(const unsigned char* const inputChannel,
         if (absolute_image_position.y > (numRows - 1)) {
           image_r = numRows - 1;
         }else {
-          image_r = absolute_image_position.y;
+          image_r = absolute_image_position.y + filter_r;
         }
       }
       if(absolute_image_position.x + filter_c < 0) {
@@ -146,7 +146,7 @@ void gaussian_blur(const unsigned char* const inputChannel,
         if (absolute_image_position.x > (numCols - 1)) {
           image_c = numCols - 1;
         }else {
-          image_c = absolute_image_position.x;
+          image_c = absolute_image_position.x + filter_c;
         }
       }
       //int image_r = std::min(std::max(absolute_image_position.y + filter_r, 0), static_cast<int>(numRows - 1));
