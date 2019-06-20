@@ -141,7 +141,7 @@ void gaussian_blur(const unsigned char* const inputChannel,
   }
   */
   for (int k_y=0;k_y<filterWidth;k_y++) {
-    for (int k_x=0;k_x<filterWidthl;k_x++) {
+    for (int k_x=0;k_x<filterWidth;k_x++) {
       int curr_abs_x = absolute_image_position.x + k_x - filterWidth/2;
       int curr_abs_y = absolute_image_position.y + k_y - filterWidth/2;
       curr_abs_x = min(max(curr_abs_x, 0), numCols - 1);
