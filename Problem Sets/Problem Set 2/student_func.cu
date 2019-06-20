@@ -131,6 +131,7 @@ void gaussian_blur(const unsigned char* const inputChannel,
   float result = 0.f;
   for (int filter_r = -filterWidth/2; filter_r <= filterWidth/2; ++filter_r) {
     for (int filter_c = -filterWidth/2; filter_c <= filterWidth/2; ++filter_c) {
+      int image_r = 0, image_c = 0;
       if(absolute_image_position.y + filter_r < 0) {
         image_r = 0;
       } else {
